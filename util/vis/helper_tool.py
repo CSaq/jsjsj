@@ -4,6 +4,7 @@ from os.path import join
 import numpy as np
 import colorsys, random, os, sys
 import pandas as pd
+
 # from helper_ply import read_ply, write_ply
 
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"
@@ -50,8 +51,10 @@ class ConfigSTPLS3D:
     saving = True
     saving_path = None
     log_dir = "/hy-tmp/log/STPLS3D"
-    
-    restore_snap = "/hy-tmp/model/fps/52.93/Log_2024-04-08_04-21-07/snapshots/snap-13501"
+
+    restore_snap = (
+        "/hy-tmp/model/fps/52.93/Log_2024-04-08_04-21-07/snapshots/snap-13501"
+    )
 
 
 # random
@@ -543,10 +546,8 @@ class DataProcessing:
                 ]
             )
         elif dataset_name == "STPLS3D":
-            num_per_class = np.array(
-                [5315782, 6445416, 3669377, 170255, 31557, 89423]
-            )
-        
+            num_per_class = np.array([5315782, 6445416, 3669377, 170255, 31557, 89423])
+
         print("*" * 20)
         print("dataset_name:", dataset_name)
         print("num_per_class:", num_per_class)
@@ -588,7 +589,7 @@ class Plot:
         return 0
 
     @staticmethod
-    def draw_pc_sem_ins(pc_xyz, pc_sem_ins, plot_colors=None):
+    def draw_pc_sem_ins(pc_xyz, pc_sem_ins, plot_colors=None, factor=1.0, add_colors = None):
         """
         pc_xyz: 3D coordinates of point clouds
         pc_sem_ins: semantic or instance labels
@@ -598,7 +599,8 @@ class Plot:
             ins_colors = plot_colors
         else:
             ins_colors = Plot.random_colors(len(np.unique(pc_sem_ins)) + 1, seed=2)
-
+            factor = np.array([factor])
+            ins_colors = ins_colors * factor
         ##############################
         sem_ins_labels = np.unique(pc_sem_ins)
         sem_ins_bbox = []
@@ -632,6 +634,8 @@ class Plot:
                 ]
             )
 
+        if add_colors is not None:
+            Y_colors = np.clip(Y_colors + add_colors, 0, 1)
         Y_semins = np.concatenate([pc_xyz[:, 0:3], Y_colors], axis=-1)
         Plot.draw_pc(Y_semins)
         return Y_semins
