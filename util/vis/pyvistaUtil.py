@@ -3,6 +3,7 @@ import collections
 import numpy as np
 from util.vis.helper_tool import Plot
 
+
 def plotInstance(xyzs, rgbs, labels):
     labelCounter = collections.Counter(labels)
     print(labelCounter)
@@ -27,28 +28,37 @@ def plotInstance(xyzs, rgbs, labels):
     print(xyz.shape)
 
     cloud = pv.PolyData(xyz)
+    cloud["point_colors"] = rgb
     pl = pv.Plotter()
-    pl.add_points(cloud, scalars=rgb, point_size=8)
-    pl.set_background('black')
+    pl.add_points(cloud, point_size=8, rgb=True)
+    pl.set_background("black")
     pl.show()
 
-def plotInstanceSeg(xyzs, labels):
+
+def plotInstanceSeg(xyzs, rgbs, labels, factor=1):
     clouds = {}
+    clouds_rgb = {}
     for i in range(0, len(labels)):
         if str(labels[i]) not in clouds:
             clouds[str(labels[i])] = []
+            clouds_rgb[str(labels[i])] = []
         clouds[str(labels[i])].append(xyzs[i])
+        clouds_rgb[str(labels[i])].append(rgbs[i])
     print(clouds.keys())
     label = list(clouds.keys())
-    rgbs = Plot.random_colors(len(label), seed=2)
+    rgbLabel = Plot.random_colors(len(label), seed=2) * np.array([factor])
 
     pl = pv.Plotter()
     for i in range(len(label)):
         xyz = clouds[label[i]]
         xyz = np.array(xyz)
         print(i, xyz.shape)
-        cloud = pv.PolyData(xyz)
-        pl.add_points(cloud, point_size=5, color=rgbs[i], style='points_gaussian')
+        rgb = clouds_rgb[label[i]]
+        rgb = np.array(rgb)
 
-    pl.set_background('black')
+        cloud = pv.PolyData(xyz)
+        cloud["point_colors"] = rgb + rgbLabel[i]
+        pl.add_points(cloud, point_size=5, rgb=True)
+
+    pl.set_background("black")
     pl.show()
